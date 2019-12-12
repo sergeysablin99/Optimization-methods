@@ -1,4 +1,4 @@
-﻿#include "simulated_annealing.h"
+﻿#include "../include/simulated_annealing.h"
 
 const double leftPoint = 9.0;
 const double rightPoint = 12.0;

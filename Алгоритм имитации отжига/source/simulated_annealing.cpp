@@ -1,5 +1,4 @@
-﻿#include "simulated_annealing.h"
-
+﻿#include "../include/simulated_annealing.h"
 
 double unimodalFunction(double x)
 {
@@ -21,7 +20,7 @@ double simulated_annealing(double (*function)(double x), double left,
                            double right, double maxTemperature, double minTemterature, std::string filename)
 {
   std::ofstream file_for_function(filename, *"w");
-  file_for_function.precision(3);
+  file_for_function.precision(7);
   file_for_function.setf(std::ios::fixed);
 
   file_for_function << "| N | T | x | f(x) | P | +- |\n";
@@ -29,7 +28,7 @@ double simulated_annealing(double (*function)(double x), double left,
 
   std::random_device random;
   std::uniform_real_distribution<> distribution(left, right);
-  std::uniform_real_distribution<> normalyzed_distribution(0, 1);
+  std::uniform_real_distribution<> normalyzed_distribution(0.0, 1.0);
 
   double probability = 1;
   bool change = false;
@@ -41,39 +40,41 @@ double simulated_annealing(double (*function)(double x), double left,
   double next_function;
   unsigned int number = 1;
 
-
   while(maxTemperature > minTemterature)
-  {
-      file_for_function << "| " << number << " | " << maxTemperature << " | "
-                       << point << " | " << current_function;
-
+    {
       next_point = distribution(random);
       next_function = function(next_point);
       probability = jump(next_function - current_function, maxTemperature);
 
-      if(next_function - current_function <= 0)
+      if(next_function - current_function < 0)
         {
           current_function = next_function;
           min = next_function;
           point = next_point;
           change = true;
-          file_for_function  << " | " << 1 << " | " << change << " |\n";
+          probability = 1;
         }
-      else if (normalyzed_distribution(random) <=
+      else if (normalyzed_distribution(random) <
                probability)
-        {
+        {	
           change = true;
           current_function = next_function;
+          min = next_function;
           point = next_point;
-          file_for_function  << " | " << probability << " | " << change << " |\n";
         }// if
-        else {
+      else {
           change = false;
-          file_for_function  << " | " << probability << " | " << change << " |\n";
         }
+
+      file_for_function << "| " << number << " | " << maxTemperature << " | "
+                        << point << " | " << current_function;
+
+      file_for_function  << " | " << probability << " | " << change << " |\n";
+
       maxTemperature = 0.95*maxTemperature;
       number++;
-  }// while
+
+    }// while
 
   file_for_function << "\nResult: Xmin = " << point << " Fmin = " << min;
 
